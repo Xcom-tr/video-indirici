@@ -16,13 +16,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API Anahtarın buraya kusursuz bir şekilde eklendi, başka hiçbir yere dokunmana gerek yok!
+# Senin gerçek API anahtarın
 ELEVEN_API_KEY = "sk_fd839d43f72167fe979334d70f42ce168cfa3ca379f7a079"
 
 class TTSRequest(BaseModel):
     text: str
-    # En güncel ve Türkçe destekleyen standart erkek sesi (Drew Kimliği)
-    voice_id: str = "N2lVS1wndvVkZsaEw56I" 
 
 @app.get("/", response_class=HTMLResponse)
 def read_root():
@@ -37,8 +35,8 @@ def text_to_speech(request: TTSRequest):
     if not ELEVEN_API_KEY:
         raise HTTPException(status_code=500, detail="API Key eksik!")
 
-    # ElevenLabs güncel seslendirme uç noktası
-    url = f"https://elevenlabs.io{request.voice_id}"
+    # ADRESİ BURADA TAMAMEN DÜZ METİN OLARAK SABİTLEDİK (Python artık hata yapamaz)
+    url = "https://elevenlabs.io"
     
     headers = {
         "Accept": "audio/mpeg",
@@ -48,7 +46,6 @@ def text_to_speech(request: TTSRequest):
     
     data = {
         "text": request.text,
-        # En yeni ve hatasız çalışan Türkçe destekli çok dilli yapay zeka modeli
         "model_id": "eleven_multilingual_v2", 
         "voice_settings": {
             "stability": 0.5,
@@ -63,7 +60,7 @@ def text_to_speech(request: TTSRequest):
             raise HTTPException(status_code=response.status_code, detail=f"ElevenLabs Hatasi: {response.text}")
         
         if len(response.content) == 0:
-            raise HTTPException(status_code=500, detail="Sunucudan boş ses verisi döndü.")
+            raise HTTPException(status_code=500, detail="Sunucudan bos ses verisi dondu.")
             
         audio_base64 = base64.b64encode(response.content).decode('utf-8')
         
@@ -73,4 +70,4 @@ def text_to_speech(request: TTSRequest):
         }
         
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Sistem Hatası: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Sistem Hatasi: {str(e)}")
