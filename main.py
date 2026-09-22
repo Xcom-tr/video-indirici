@@ -17,7 +17,7 @@ app.add_middleware(
 )
 
 # Senin gerçek API anahtarın
-ELEVEN_API_KEY = "sk_fd839d43f72167fe979334d70f42ce168cfa3ca379f7a079"
+ELEVEN_API_KEY = "sk_34d6ccb20fd2701710e8a77db641ddd1308a4f1f6d573b86"
 
 class TTSRequest(BaseModel):
     text: str
