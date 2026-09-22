@@ -1,7 +1,6 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
-from pydantic import BaseModel
 import requests
 import io
 import os
@@ -16,11 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Senin çalışan tam yetkili anahtarın
 ELEVEN_API_KEY = "sk_34d6ccb20fd2701710e8a77db641ddd1308a4f1f6d573b86"
-
-class TTSRequest(BaseModel):
-    text: str
 
 @app.get("/", response_class=HTMLResponse)
 def read_root():
@@ -30,12 +25,11 @@ def read_root():
             return f.read()
     return "<h3>index.html dosyasi bulunamadi!</h3>"
 
-@app.post("/api/tts")
-def text_to_speech(request: TTSRequest):
+@app.get("/api/tts")
+def text_to_speech(text: str = Query(..., description="Seslendirilecek metin")):
     if not ELEVEN_API_KEY:
         raise HTTPException(status_code=500, detail="API Key eksik!")
 
-    # Her hesapta varsayılan açık olan Rachel sesi
     url = "https://elevenlabs.io"
     
     headers = {
@@ -46,7 +40,7 @@ def text_to_speech(request: TTSRequest):
     }
     
     data = {
-        "text": request.text,
+        "text": text,
         "model_id": "eleven_multilingual_v2", 
         "voice_settings": {
             "stability": 0.5,
@@ -55,17 +49,14 @@ def text_to_speech(request: TTSRequest):
     }
     
     try:
-        # Akış modunda (stream=True) istek atıyoruz
         response = requests.post(url, json=data, headers=headers, timeout=30, stream=True)
         
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail=f"ElevenLabs Hatasi: {response.text}")
         
-        # Tarayıcının süreyi tanıyabilmesi için veriyi bellek üzerinden canlı akış olarak fırlatıyoruz
         return StreamingResponse(
             io.BytesIO(response.content), 
-            media_type="audio/mpeg",
-            headers={"Content-Disposition": "inline; filename=speech.mp3"}
+            media_type="audio/mpeg"
         )
         
     except Exception as e:
