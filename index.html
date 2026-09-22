@@ -5,64 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yapay Zeka Seslendirme Stüdyosu</title>
     <style>
-        body {
-            background-color: #0f172a; color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-            margin: 0; padding: 0; min-height: 100vh;
-            display: flex; flex-direction: column; justify-content: space-between;
-        }
+        body { background-color: #0f172a; color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; }
         header { border-bottom: 1px solid #1e293b; padding: 15px; text-align: center; }
         .logo { color: #60a5fa; font-weight: 900; font-size: 24px; margin: 0; }
         main { max-width: 600px; width: 90%; margin: auto; padding: 20px; }
         .studio-card { background-color: #1e293b; padding: 25px; border-radius: 16px; border: 1px solid #334155; }
-        textarea {
-            width: 100%; height: 120px; background-color: #0f172a; border: 1px solid #334155;
-            border-radius: 10px; padding: 12px; color: white; font-size: 15px; outline: none; resize: none;
-            box-sizing: border-box; margin-bottom: 15px;
-        }
+        textarea { width: 100%; height: 120px; background-color: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 12px; color: white; font-size: 15px; outline: none; resize: none; box-sizing: border-box; margin-bottom: 15px; }
         textarea:focus { border-color: #60a5fa; }
-        button {
-            width: 100%; background-color: #60a5fa; color: #0f172a; font-weight: bold;
-            border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-size: 16px;
-        }
+        button { width: 100%; background-color: #60a5fa; color: #0f172a; font-weight: bold; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-size: 16px; }
         button:hover { background-color: #3b82f6; }
         button:disabled { background-color: #334155; color: #94a3b8; cursor: not-allowed; }
         #audioPlayerContainer { margin-top: 25px; display: none; text-align: center; }
         audio { width: 100%; margin-bottom: 15px; }
-        .download-btn {
-            display: inline-block; background-color: #10b981; color: white; padding: 10px 20px;
-            border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px;
-        }
+        .download-btn { display: inline-block; background-color: #10b981; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; }
         .download-btn:hover { background-color: #059669; }
         #statusText { text-align: center; color: #94a3b8; font-size: 14px; margin-top: 15px; display: none; }
     </style>
 </head>
 <body>
-
-    <header>
-        <h1 class="logo">🎙️ AI SES STÜDYOSU</h1>
-    </header>
-
+    <header><h1 class="logo">🎙️ AI SES STÜDYOSU</h1></header>
     <main>
         <div class="studio-card">
-            <h3 style="margin-top: 0; margin-bottom: 15px;">Seslendirilecek Metni Girin:</h3>
+            <h3 style="margin-top:0; margin-bottom:15px;">Seslendirilecek Metni Girin:</h3>
             <textarea id="txtInput" placeholder="Yapay zekanın okumasını istediğiniz Türkçe metni buraya yazın..."></textarea>
             <button onclick="generateSpeech()" id="btnAction">Sese Dönüştür 🚀</button>
-            
             <div id="statusText">Yapay zeka konuşuyor, lütfen bekleyin...</div>
-
             <div id="audioPlayerContainer">
-                <audio id="audioPlayer" controls></audio>
-                <br>
+                <!-- Tarayıcının sesi yüklemesi için preload ayarı eklendi -->
+                <audio id="audioPlayer" controls preload="auto"></audio><br>
                 <a id="downloadLink" href="#" download="ai-seslendirme.mp3" class="download-btn">Ses Dosyasını İndir 📥</a>
             </div>
         </div>
     </main>
-
-    <footer>
-        <p>&copy; 2026 AI SES. Tüm hakları saklıdır.</p>
-    </footer>
-
+    <footer><p>&copy; 2026 AI SES. Tüm hakları sablıdır.</p></footer>
     <script>
         async function generateSpeech() {
             const text = document.getElementById('txtInput').value.trim();
@@ -72,41 +47,49 @@
             const audioPlayer = document.getElementById('audioPlayer');
             const downloadLink = document.getElementById('downloadLink');
 
-            if (!text) {
-                alert('Lütfen bir metin girin!');
-                return;
-            }
-
-            btnAction.disabled = true;
-            statusText.style.display = 'block';
-            playerContainer.style.display = 'none';
+            if (!text) { alert('Lütfen bir metin girin!'); return; }
+            btnAction.disabled = true; statusText.style.display = 'block'; playerContainer.style.display = 'none';
 
             try {
-                // İstek yeniden güvenli bir şekilde kendi sunucumuza yönlendirildi
                 const response = await fetch('/api/tts', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text: text })
                 });
 
-                const data = await response.json();
-
-                if (response.ok && data.success) {
-                    const audioSrc = "data:audio/mpeg;base64," + data.audio_data;
-                    audioPlayer.src = audioSrc;
-                    downloadLink.href = audioSrc;
+                if (response.ok) {
+                    const blob = await response.blob();
+                    
+                    // Tarayıcının eski ses linklerini hafızadan silip temizliyoruz
+                    if (audioPlayer.src) {
+                        URL.revokeObjectURL(audioPlayer.src);
+                    }
+                    
+                    // Gelen veriyi tam uyumlu bir ses dosyası nesnesine çeviriyoruz
+                    const audioUrl = URL.createObjectURL(blob);
+                    
+                    audioPlayer.src = audioUrl;
+                    downloadLink.href = audioUrl;
                     
                     playerContainer.style.display = 'block';
-                    audioPlayer.play();
+                    
+                    // Tarayıcı oynatıcısını sıfırdan yüklemeye zorla
+                    audioPlayer.load();
+                    
+                    // Kısa bir süre bekleyip oynatmayı tetikle
+                    setTimeout(() => {
+                        audioPlayer.play().catch(e => console.log("Otomatik oynatma engellendi, oynata basın."));
+                    }, 300);
+
                 } else {
-                    alert(data.detail || 'Ses üretilemedi.');
+                    const errData = await response.text();
+                    alert('Ses üretilemedi: ' + errData);
                 }
             } catch (error) {
                 console.error(error);
                 alert('Bağlantı hatası yaşandı!');
             } finally {
-                btnAction.disabled = false;
-                statusText.style.display = 'none';
+                btnAction.disabled = false; statusText.style.display = 'none';
             }
         }
     </script>
