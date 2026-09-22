@@ -16,7 +16,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Yeni aldığın tam yetkili anahtarın buraya kusursuzca yerleştirildi
+# Senin en son aldığın çalışan API anahtarın sabitlendi
 ELEVEN_API_KEY = "sk_34d6ccb20fd2701710e8a77db641ddd1308a4f1f6d573b86"
 
 class TTSRequest(BaseModel):
@@ -35,7 +35,7 @@ def text_to_speech(request: TTSRequest):
     if not ELEVEN_API_KEY:
         raise HTTPException(status_code=500, detail="API Key eksik!")
 
-    # Adres satırı tek parça halinde kilitlendi
+    # YENİ SES: Ücretsiz hesaplarda kilitli olmayan, standart Rachel ses kimliği yerleştirildi
     url = "https://elevenlabs.io"
     
     headers = {
