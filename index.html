@@ -3,307 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hızlı Video İndirici (SaveFrom Tarzı)</title>
+    <title>Yapay Zeka Seslendirme Stüdyosu</title>
     <style>
-        /* Tamamen dış kütüphanelerden bağımsız, kırılmaz özel tasarım kodları */
         body {
             background-color: #0f172a;
             color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-col: column;
-            flex-direction: column;
-            justify-content: space-between;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            margin: 0; padding: 0; min-height: 100vh;
+            display: flex; flex-direction: column; justify-content: space-between;
         }
-        header {
-            border-b: 1px solid #1e293b;
-            padding: 15px;
-            background-color: #0f172a;
-            border-bottom: 1px solid #1e293b;
+        header { border-bottom: 1px solid #1e293b; padding: 15px; text-align: center; }
+        .logo { color: #60a5fa; font-weight: 900; font-size: 24px; margin: 0; }
+        main { max-width: 600px; width: 90%; margin: auto; padding: 20px; }
+        .studio-card { background-color: #1e293b; padding: 25px; border-radius: 16px; border: 1px solid #334155; }
+        textarea {
+            width: 100%; height: 120px; background-color: #0f172a; border: 1px solid #334155;
+            border-radius: 10px; padding: 12px; color: white; font-size: 15px; outline: none; resize: none;
+            box-sizing: border-box; margin-bottom: 15px;
         }
-        .header-container {
-            max-width: 800px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .logo {
-            color: #34d399;
-            font-weight: 900;
-            font-size: 24px;
-            letter-spacing: 1px;
-            margin: 0;
-        }
-        .badge {
-            background-color: #1e293b;
-            color: #94a3b8;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
-        main {
-            max-width: 700px;
-            width: 90%;
-            margin: auto;
-            padding: 20px;
-        }
-        .text-center {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        h2 {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 10px;
-        }
-        .subtitle {
-            color: #94a3b8;
-            margin: 0;
-            font-size: 15px;
-        }
-        .search-box {
-            background-color: #1e293b;
-            padding: 15px;
-            border-radius: 16px;
-            border: 1px solid #334155;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            display: flex;
-            gap: 10px;
-        }
-        input[type="text"] {
-            flex: 1;
-            background-color: #0f172a;
-            border: 1px solid #334155;
-            border-radius: 10px;
-            padding: 12px;
-            color: white;
-            font-size: 14px;
-            outline: none;
-        }
-        input[type="text"]:focus {
-            border-color: #10b981;
-        }
+        textarea:focus { border-color: #60a5fa; }
         button {
-            background-color: #10b981;
-            color: #0f172a;
-            font-weight: bold;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            white-space: nowrap;
-            transition: background 0.2s;
+            width: 100%; background-color: #60a5fa; color: #0f172a; font-weight: bold;
+            border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-size: 16px;
         }
-        button:hover {
-            background-color: #059669;
-        }
-        button:disabled {
-            background-color: #334155;
-            cursor: not-allowed;
-            color: #94a3b8;
-        }
-        #loader {
-            text-align: center;
-            margin: 40px 0;
-            display: none; /* Başlangıçta tamamen gizli */
-        }
-        .spinner {
-            border: 4px solid #1e293b;
-            border-top: 4px solid #10b981;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-bottom: 10px;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        #resultBox {
-            background-color: #1e293b;
-            padding: 20px;
-            border-radius: 16px;
-            border: 1px solid #334155;
-            margin-top: 30px;
-            display: none; /* Başlangıçta tamamen gizli */
-            gap: 20px;
-        }
-        #vThumbnail {
-            width: 100%;
-            max-width: 200px;
-            height: auto;
-            border-radius: 10px;
-            object-cover: cover;
-            border: 1px solid #334155;
-        }
-        .details {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-        .details h3 {
-            margin: 0 0 10px 0;
-            font-size: 18px;
-        }
-        .duration {
-            font-size: 12px;
-            background-color: #0f172a;
-            padding: 4px 8px;
-            border-radius: 4px;
-            color: #94a3b8;
-            display: inline-block;
-        }
-        .links-title {
-            font-size: 12px;
-            font-weight: bold;
-            color: #94a3b8;
-            text-transform: uppercase;
-            margin-top: 15px;
-            margin-bottom: 10px;
-            display: block;
-        }
-        .grid-links {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        @media (max-width: 500px) {
-            .search-box { flex-direction: column; }
-            #resultBox { flex-direction: column; align-items: center; }
-            .grid-links { grid-template-columns: 1fr; }
-            #vThumbnail { max-width: 100%; }
-        }
+        button:hover { background-color: #3b82f6; }
+        button:disabled { background-color: #334155; color: #94a3b8; cursor: not-allowed; }
+        #audioPlayerContainer { margin-top: 25px; display: none; text-align: center; }
+        audio { width: 100%; margin-bottom: 15px; }
         .download-btn {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: #0f172a;
-            border: 1px solid #334155;
-            padding: 10px 15px;
-            border-radius: 10px;
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
+            display: inline-block; background-color: #10b981; color: white; padding: 10px 20px;
+            border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px;
         }
-        .download-btn:hover {
-            background-color: #10b981;
-            color: #0f172a;
-        }
-        footer {
-            border-top: 1px solid #1e293b;
-            padding: 15px;
-            text-align: center;
-            font-size: 12px;
-            color: #64748b;
-        }
+        .download-btn:hover { background-color: #059669; }
+        #statusText { text-align: center; color: #94a3b8; font-size: 14px; margin-top: 15px; display: none; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="header-container">
-            <h1 class="logo">⚡ VIDEOINDİR</h1>
-            <span class="badge">v1.0 - Ücretsiz</span>
-        </div>
+        <h1 class="logo">🎙️ AI SES STÜDYOSU</h1>
     </header>
 
     <main>
-        <div class="text-center">
-            <h2>İnternetteki Her Videoyu İndirin</h2>
-            <p class="subtitle">YouTube, Instagram ve daha yüzlerce siteden anında video indirin.</p>
-        </div>
+        <div class="studio-card">
+            <h3 style="margin-top: 0; margin-bottom: 15px;">Seslendirilecek Metni Girin:</h3>
+            <textarea id="txtInput" placeholder="Yapay zekanın okumasını istediğiniz Türkçe metni buraya yazın..."></textarea>
+            <button onclick="generateSpeech()" id="btnAction">Sese Dönüştür 🚀</button>
+            
+            <div id="statusText">Yapay zeka konuşuyor, lütfen bekleyin...</div>
 
-        <div class="search-box">
-            <input type="text" id="videoUrl" placeholder="Video linkini buraya yapıştırın (Örn: https://youtube.com...)">
-            <button onclick="analyzeVideo()" id="btnAction">Videoyu Çöz</button>
-        </div>
-
-        <!-- Yükleniyor Alanı -->
-        <div id="loader">
-            <div class="spinner"></div>
-            <div style="color: #94a3b8; font-size: 14px;">Video sunucuda analiz ediliyor, lütfen bekleyin...</div>
-        </div>
-
-        <!-- Sonuç Penceresi -->
-        <div id="resultBox">
-            <img id="vThumbnail" src="" alt="Kapak">
-            <div class="details">
-                <div>
-                    <h3 id="vTitle">Video Başlığı</h3>
-                    <span id="vDuration" class="duration">Süre: 00:00</span>
-                </div>
-                <div>
-                    <span class="links-title">Kullanılabilir Formatlar:</span>
-                    <div id="downloadLinks" class="grid-links">
-                        <!-- Butonlar otomatik eklenecek -->
-                    </div>
-                </div>
+            <div id="audioPlayerContainer">
+                <audio id="audioPlayer" controls></audio>
+                <br>
+                <a id="downloadLink" href="#" download="ai-seslendirme.mp3" class="download-btn">Ses Dosyasını İndir 📥</a>
             </div>
         </div>
     </main>
 
     <footer>
-        <p>&copy; 2026 VIDEOINDİR. Tüm hakları saklıdır.</p>
+        <p>&copy; 2026 AI SES. Tüm hakları saklıdır.</p>
     </footer>
 
     <script>
-        async function analyzeVideo() {
-            const urlInput = document.getElementById('videoUrl').value.trim();
+        async function generateSpeech() {
+            const text = document.getElementById('txtInput').value.trim();
             const btnAction = document.getElementById('btnAction');
-            const loader = document.getElementById('loader');
-            const resultBox = document.getElementById('resultBox');
-            const downloadLinks = document.getElementById('downloadLinks');
+            const statusText = document.getElementById('statusText');
+            const playerContainer = document.getElementById('audioPlayerContainer');
+            const audioPlayer = document.getElementById('audioPlayer');
+            const downloadLink = document.getElementById('downloadLink');
 
-            if (!urlInput) {
-                alert('Lütfen geçerli bir video linki girin!');
+            if (!text) {
+                alert('Lütfen bir metin girin!');
                 return;
             }
 
             btnAction.disabled = true;
-            loader.style.display = 'block';
-            resultBox.style.display = 'none';
-            downloadLinks.innerHTML = '';
+            statusText.style.display = 'block';
+            playerContainer.style.display = 'none';
 
             try {
-                const response = await fetch('/api/analyze', {
+                const response = await fetch('/api/tts', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: urlInput })
+                    body: JSON.stringify({ text: text })
                 });
 
                 const data = await response.json();
 
                 if (response.ok && data.success) {
-                    document.getElementById('vTitle').innerText = data.title;
-                    document.getElementById('vThumbnail').src = data.thumbnail;
-                    document.getElementById('vDuration').innerText = `Süre: ${data.duration}`;
-
-                    data.links.forEach(link => {
-                        const btn = document.createElement('a');
-                        btn.href = link.download_url;
-                        btn.target = '_blank';
-                        btn.setAttribute('download', `${data.title}.${link.ext}`);
-                        btn.className = "download-btn";
-                        
-                        btn.innerHTML = `
-                            <span>🎬 ${link.quality} (${link.ext.toUpperCase()})</span>
-                            <span style="font-size: 11px; opacity: 0.8;">İndir 📥</span>
-                        `;
-                        downloadLinks.appendChild(btn);
-                    });
-
-                    resultBox.style.display = 'flex';
+                    const audioSrc = "data:audio/mpeg;base64," + data.audio_data;
+                    audioPlayer.src = audioSrc;
+                    downloadLink.href = audioSrc;
+                    
+                    playerContainer.style.display = 'block';
+                    audioPlayer.play();
                 } else {
-                    alert(data.detail || 'Bir hata oluştu. Linki kontrol edin.');
+                    alert(data.detail || 'Ses üretilemedi. API anahtarınızı kontrol edin.');
                 }
             } catch (error) {
                 console.error(error);
+                alert('Sunucu bağlantı hatası!');
+            } finally {
+                btnAction.disabled = false;
+                statusText.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
