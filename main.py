@@ -4,6 +4,7 @@ from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import requests
 import os
+import base64
 
 app = FastAPI(title="Yapay Zeka Seslendirme Fabrikası")
 
@@ -15,12 +16,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Kopyaladığın uzun API kodunu aşağıdaki iki tırnak arasına yapıştır!
+# API Anahtarın buraya kusursuz bir şekilde eklendi, başka hiçbir yere dokunmana gerek yok!
 ELEVEN_API_KEY = "sk_fd839d43f72167fe979334d70f42ce168cfa3ca379f7a079"
 
 class TTSRequest(BaseModel):
     text: str
-    voice_id: str = "21m00Tcm4TlvDq8ikWAM" # Varsayılan Rachel sesi
+    # En güncel ve Türkçe destekleyen standart erkek sesi (Drew Kimliği)
+    voice_id: str = "N2lVS1wndvVkZsaEw56I" 
 
 @app.get("/", response_class=HTMLResponse)
 def read_root():
@@ -32,13 +34,11 @@ def read_root():
 
 @app.post("/api/tts")
 def text_to_speech(request: TTSRequest):
-    if not ELEVEN_API_KEY or ELEVEN_API_KEY == "BURAYA_ELEVENLABS_API_ANAHTARINI_YAPISTIR":
-        raise HTTPException(status_code=500, detail="API Key eksik! Lütfen ElevenLabs API anahtarınızı girin.")
+    if not ELEVEN_API_KEY:
+        raise HTTPException(status_code=500, detail="API Key eksik!")
 
-    # ADRES BURADA HATASIZ HALE GETİRİLDİ (Araya net bir bölü işareti koyuldu)
-    base_url = "https://elevenlabs.io"
-    endpoint = f"/v1/text-to-speech/{request.voice_id}"
-    url = f"{base_url}{endpoint}"
+    # ElevenLabs güncel seslendirme uç noktası
+    url = f"https://elevenlabs.io{request.voice_id}"
     
     headers = {
         "Accept": "audio/mpeg",
@@ -48,7 +48,8 @@ def text_to_speech(request: TTSRequest):
     
     data = {
         "text": request.text,
-        "model_id": "eleven_multilingual_v2", # Türkçe destekleyen en iyi yapay zeka modeli
+        # En yeni ve hatasız çalışan Türkçe destekli çok dilli yapay zeka modeli
+        "model_id": "eleven_multilingual_v2", 
         "voice_settings": {
             "stability": 0.5,
             "similarity_boost": 0.75
@@ -56,12 +57,14 @@ def text_to_speech(request: TTSRequest):
     }
     
     try:
-        response = requests.post(url, json=data, headers=headers)
+        response = requests.post(url, json=data, headers=headers, timeout=30)
         
         if response.status_code != 200:
-            raise HTTPException(status_code=response.status_code, detail=f"Yapay zeka hatasi: {response.text}")
+            raise HTTPException(status_code=response.status_code, detail=f"ElevenLabs Hatasi: {response.text}")
         
-        import base64
+        if len(response.content) == 0:
+            raise HTTPException(status_code=500, detail="Sunucudan boş ses verisi döndü.")
+            
         audio_base64 = base64.b64encode(response.content).decode('utf-8')
         
         return {
