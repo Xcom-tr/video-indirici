@@ -32,10 +32,13 @@ def read_root():
 
 @app.post("/api/tts")
 def text_to_speech(request: TTSRequest):
-    if not ELEVEN_API_KEY or ELEVEN_API_KEY == "sk_fd839d43f72167fe979334d70f42ce168cfa3ca379f7a079":
+    if not ELEVEN_API_KEY or ELEVEN_API_KEY == "BURAYA_ELEVENLABS_API_ANAHTARINI_YAPISTIR":
         raise HTTPException(status_code=500, detail="API Key eksik! Lütfen ElevenLabs API anahtarınızı girin.")
 
-    url = f"https://elevenlabs.io{request.voice_id}/stream"
+    # ADRES BURADA HATASIZ HALE GETİRİLDİ (Araya net bir bölü işareti koyuldu)
+    base_url = "https://elevenlabs.io"
+    endpoint = f"/v1/text-to-speech/{request.voice_id}"
+    url = f"{base_url}{endpoint}"
     
     headers = {
         "Accept": "audio/mpeg",
