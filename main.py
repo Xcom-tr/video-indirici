@@ -16,7 +16,7 @@ app.add_middleware(
 )
 
 # Kopyaladığın uzun API kodunu aşağıdaki iki tırnak arasına yapıştır!
-ELEVEN_API_KEY = "BURAYA_ELEVENLABS_API_ANAHTARINI_YAPISTIR"
+ELEVEN_API_KEY = "sk_fd839d43f72167fe979334d70f42ce168cfa3ca379f7a079"
 
 class TTSRequest(BaseModel):
     text: str
